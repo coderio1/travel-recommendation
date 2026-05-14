@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel Recommender</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <header>
+        <h1>🌍 Travel Recommender</h1>
+        <div id="user-bar">
+            <span id="user-info"></span>
+            <button id="logout-btn" class="hidden">Logout</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Auth panel -->
+        <section id="auth-panel" class="card">
+            <div class="tabs">
+                <button id="tab-login" class="tab active">Login</button>
+                <button id="tab-register" class="tab">Register</button>
+            </div>
+
+            <form id="login-form">
+                <label>Email <input type="email" name="email" required /></label>
+                <label>Password <input type="password" name="password" required minlength="8" /></label>
+                <button type="submit">Login</button>
+            </form>
+
+            <form id="register-form" class="hidden">
+                <label>Email <input type="email" name="email" required /></label>
+                <label>Name <input type="text" name="name" /></label>
+                <label>Password <input type="password" name="password" required minlength="8" /></label>
+                <button type="submit">Create account</button>
+            </form>
+
+            <p id="auth-error" class="error"></p>
+        </section>
+
+        <!-- Recommendation panel -->
+        <section id="rec-panel" class="card hidden">
+            <h2>Find your next trip</h2>
+            <form id="rec-form">
+                <div class="row">
+                    <label>Country
+                        <input type="text" name="wanted_country" placeholder="e.g. Italy" />
+                    </label>
+                    <label>Area
+                        <input type="text" name="wanted_area" placeholder="e.g. Lazio" />
+                    </label>
+                </div>
+
+                <div class="row">
+                    <label>Activity
+                        <select name="activity_type_id">
+                            <option value="">Any</option>
+                        </select>
+                    </label>
+                    <label>Preference
+                        <select name="preference">
+                            <option value="">Any</option>
+                            <option value="cheap">Cheap</option>
+                            <option value="quiet">Quiet</option>
+                            <option value="luxury">Luxury</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="row">
+                    <label>Start month
+                        <input type="number" name="vacation_start_month" min="1" max="12" placeholder="1-12" />
+                    </label>
+                    <label>End month
+                        <input type="number" name="vacation_end_month" min="1" max="12" placeholder="1-12" />
+                    </label>
+                </div>
+
+                <button type="submit">Get recommendations</button>
+            </form>
+
+            <div id="results"></div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
