@@ -103,7 +103,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=travel_net"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      -
+
       # Route www.your.domain to this backend.
       - "traefik.http.routers.backend.rule=Host(`www.${DOMAIN}`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
