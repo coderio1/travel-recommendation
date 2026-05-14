@@ -1,21 +1,133 @@
 services:
+  # ---------------------------------------------------------------------------
+  # Reverse proxy / TLS termination
+  # ---------------------------------------------------------------------------
+  traefik:
+    image: traefik:v3.7
+    container_name: travel_traefik
+    restart: unless-stopped
+    command:
+      # YAML file mounted below for static config;
+      - "--configFile=/etc/traefik/traefik.yml"
+#      - "--log.level=DEBUG"     # uncomment this line for traefik debug logs
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Read-only mount of the docker socket — required for the Docker provider.
+      # Read-only is the standard hardening; Traefik only needs to LIST containers.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Traefik static conf
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      # Traefik dynamic conf
+      - ./traefik/traefik_dynamic.yml:/etc/traefik/traefik_dynamic.yml:ro
+      # Persist Let's Encrypt certs across restarts. Permissions on the host file
+      # MUST be 0600 or Traefik refuses to start.
+      - ./traefik/acme.json:/letsencrypt/acme.json
+      - ./traefik/cert:/etc/traefik/cert
+    networks:
+      - travel_net
+    labels:
+      - "traefik.enable=true"
+
+      # --- Traefik dashboard --------------------------------------------------
+      # Available at https://traefik.travelfast.local/dashboard/ — basic-auth protected.
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}"
+
+      # --- Apex -> www redirect ----------------------------------------------
+      # Anyone hitting you.domain gets 301'd to www.your.domain.
+      - "traefik.http.routers.apex-redirect.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.apex-redirect.entrypoints=websecure"
+      - "traefik.http.routers.apex-redirect.tls=true"
+      - "traefik.http.routers.apex-redirect.middlewares=apex-to-www"
+      - "traefik.http.routers.apex-redirect.service=noop@internal"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.regex=^https?://${DOMAIN}(.*)"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.${DOMAIN}/$${1}"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.permanent=true"
+
+  # ---------------------------------------------------------------------------
+  # Application database
+  # ---------------------------------------------------------------------------
   db:
     image: postgres:16-alpine
     container_name: travel_db
     restart: unless-stopped
-    env_file: .env
-    ports:
-      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-travel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-travel}
+      POSTGRES_DB: ${POSTGRES_DB:-travel}
+    # NOTE: no ports: section anymore. Postgres is reachable only inside the
+    # docker network as `db:5432`. If you need to connect from your host for
+    # debugging, re-add `ports: - "5432:5432"` temporarily.
     volumes:
-      - db-data:/var/lib/postgresql/data
-      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - db_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - travel_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-travel} -d ${POSTGRES_DB:-travel}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  # ---------------------------------------------------------------------------
+  # FastAPI application
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: travel_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-travel}:${POSTGRES_PASSWORD:-travel}@db:5432/${POSTGRES_DB:-travel}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRES_MINUTES: "60"
+      # CORS now allows the public domain — must match what the browser actually uses.
+      CORS_ORIGINS: "https://www.${DOMAIN},https://${DOMAIN}"
+    # No ports: section — backend is only reachable through Traefik.
+    volumes:
+      - app_data:/app/app:ro
+    networks:
+      - travel_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=travel_net"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      -
+      # Route www.your.domain to this backend.
+      - "traefik.http.routers.backend.rule=Host(`www.${DOMAIN}`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.service=backend"
+
+      # --- Security headers middleware ---------------------------------------
+      - "traefik.http.routers.backend.middlewares=secure-headers"
+      - "traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.secure-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.secure-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.secure-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.secure-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.secure-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
 
 volumes:
-  db-data:
-    name: travel-data
+  db_data:
+    name: travel_db
     external: True
+  app_data:
+    name: travel_app
+    external: True
+
+networks:
+  travel_net:
+    name: travel_net
+    driver: bridge
