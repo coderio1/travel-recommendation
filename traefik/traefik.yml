@@ -1,0 +1,67 @@
+# =============================================================================
+# Traefik static configuration
+# =============================================================================
+# It's read at startup. Per-service routes live as Docker labels
+# on the other compose services (the "dynamic" config from the Docker provider).
+# =============================================================================
+
+# Listen on 80 (HTTP) and 443 (HTTPS). HTTP traffic gets redirected to HTTPS
+# via the redirection block below.
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+    http:
+      tls:  {}
+
+api:
+  # Dashboard at https://traefik.<domain>/dashboard/  (protected by basic-auth label)
+  dashboard: true
+  # `insecure: false` means the dashboard is only reachable via the routed entrypoint,
+  # not on a raw port. Safer for production.
+  insecure: false
+
+# Service discovery: read labels from Docker containers on the same compose network.
+# `exposedByDefault: false` means a container is NOT routed unless it explicitly
+# sets `traefik.enable=true` — safer than the opposite default.
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: travel_net    # explicit network to avoid ambiguity
+  file:
+    filename: /etc/traefik/traefik_dynamic.yml # Point to the file above
+    watch: true
+
+# Two ACME resolvers: one for Let's Encrypt staging (no rate limit issues, browser
+# will warn about untrusted cert), one for production (real trusted certs but
+# strict rate limits — start with staging, switch when it works).
+certificatesResolvers:
+  letsencrypt-staging:
+    acme:
+      email: "${ACME_EMAIL}"
+      storage: /letsencrypt/acme.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
+
+  letsencrypt:
+    acme:
+      email: "${ACME_EMAIL}"
+      storage: /letsencrypt/acme.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
+
+# Logs go to stdout so `docker compose logs traefik` works as expected.
+log:
+  level: INFO
+
+accessLog: {}

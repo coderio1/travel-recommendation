@@ -1,0 +1,12 @@
+# Dynamic TLS configuration — loaded by the file provider in traefik.yml.
+# local.crt covers traefik.travelfast.local + *.travelfast.local (wildcard).
+tls:
+  certificates:
+    - certFile: /etc/traefik/cert/cert.pem
+      keyFile: /etc/traefik/cert/key.pem
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/traefik/cert/cert.pem
+        keyFile: /etc/traefik/cert/key.pem
+
