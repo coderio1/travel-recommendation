@@ -1,12 +1,6 @@
 # =============================================================================
 # Traefik static configuration
 # =============================================================================
-# It's read at startup. Per-service routes live as Docker labels
-# on the other compose services (the "dynamic" config from the Docker provider).
-# =============================================================================
-
-# Listen on 80 (HTTP) and 443 (HTTPS). HTTP traffic gets redirected to HTTPS
-# via the redirection block below.
 entryPoints:
   web:
     address: ":80"
@@ -24,13 +18,9 @@ entryPoints:
 api:
   # Dashboard at https://traefik.<domain>/dashboard/  (protected by basic-auth label)
   dashboard: true
-  # `insecure: false` means the dashboard is only reachable via the routed entrypoint,
-  # not on a raw port. Safer for production.
   insecure: false
 
-# Service discovery: read labels from Docker containers on the same compose network.
-# `exposedByDefault: false` means a container is NOT routed unless it explicitly
-# sets `traefik.enable=true` — safer than the opposite default.
+# Service discovery: read labels from Docker containers.
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
@@ -40,9 +30,7 @@ providers:
     filename: /etc/traefik/traefik_dynamic.yml # Point to the file above
     watch: true
 
-# Two ACME resolvers: one for Let's Encrypt staging (no rate limit issues, browser
-# will warn about untrusted cert), one for production (real trusted certs but
-# strict rate limits — start with staging, switch when it works).
+# Two ACME resolvers: one for staging, one for production.
 certificatesResolvers:
   letsencrypt-staging:
     acme:
@@ -60,7 +48,7 @@ certificatesResolvers:
       httpChallenge:
         entryPoint: web
 
-# Logs go to stdout so `docker compose logs traefik` works as expected.
+# docker-compose logs traefik.
 log:
   level: INFO
 
