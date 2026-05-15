@@ -2,10 +2,10 @@
 # Domain & TLS
 # ========================
 
-DOMAIN=domain.local
-ACME_EMAIL=your@email
+DOMAIN=yourdomain.local     # set this line to domain of your choice
+ACME_EMAIL=your@email       # set this var to your real email
 
-CERT_RESOLVER=letsencrypt-staging
+CERT_RESOLVER=letsencrypt-staging       # do not change this
 
 # ========================
 # Traefik dashboard auth
@@ -14,18 +14,18 @@ CERT_RESOLVER=letsencrypt-staging
 # Generate hash in CLI by pasting the following command: 
 # htpasswd -nbB admin 'your-password' | sed -e 's/\$/\$\$/g'
 
-TRAEFIK_DASHBOARD_AUTH=paste_here_htpasswd
+TRAEFIK_DASHBOARD_AUTH=paste_here_htpasswd that you got as result from previous line
 
 # =========================
 # Postgres
 # =========================
-POSTGRES_DB=db_name
-POSTGRES_USER=db_user
-POSTGRES_PASSWORD=db_password
-POSTGRES_PORT=5432
+POSTGRES_DB=db_name             # set DB name of your choice
+POSTGRES_USER=db_user           # set DB username of your choice
+POSTGRES_PASSWORD=db_password   # set DB password of your choice
+POSTGRES_PORT=5432              # leave this port as it is
 
 # ==========================
 # Application
 # ==========================
-# JWT secret. REQUIRED — generate with: openssl rand -hex 32
-JWT_SECRET=paste_JWT_token
+# Generate JWT secret. in CLI by pasting the following command: openssl rand -hex 32
+JWT_SECRET=paste_JWT_token that you got as result from previous line
