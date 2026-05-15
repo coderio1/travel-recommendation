@@ -84,8 +84,8 @@ chmod 600 traefik/acme.json   # if needed
 ## 4. Open dashboards in the browser
 
 #### Traefik ####
-`https://traefik.your.domaine/dashboard/`
+`https://traefik.your.domain/dashboard/`
 
 #### Application ####
-`https://your.domaine`
+`https://your.domain`
 
