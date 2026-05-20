@@ -45,7 +45,7 @@ Installed:
 - mkcert
 
 
-## First-time setup
+## First-time setup - Localhost run
 
 ### 1. Configure environment
 
