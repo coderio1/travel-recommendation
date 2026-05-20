@@ -66,22 +66,13 @@ docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'your-strong-password' \
 ```
 Paste the result as `TRAEFIK_DASHBOARD_AUTH=...` in `.env`.
 
-### 2. Verify acme.json permissions
-
-This file MUST be `chmod 600` or Traefik refuses to start:
-```bash
-ls -l traefik/acme.json
-# -rw------- 1 you you 0 ... acme.json
-chmod 600 traefik/acme.json   # if needed
-```
-
-### 3. Run bash script in your terminal
+### 2. Run bash script in your terminal
 
 ```bash
 ./run_after_env_setup.sh
 ```
 
-## 4. Open dashboards in the browser
+## 3. Open dashboards in the browser
 
 #### Traefik ####
 `https://traefik.your.domain/dashboard/`
