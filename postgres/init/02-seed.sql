@@ -120,7 +120,6 @@ INSERT INTO destinations (name, country, area) VALUES
     ('Saint Petersburg', 'Russia', 'Northwest Russia')
 ON CONFLICT (name) DO NOTHING;
 
--- Helper: link destination + activity by names (avoids hard-coded IDs)
 INSERT INTO destination_activities
     (destination_id, activity_type_id, start_month, end_month, price_level, quiet_level, luxury_level)
 SELECT d.id, a.id, s.start_month, s.end_month, s.price_level, s.quiet_level, s.luxury_level

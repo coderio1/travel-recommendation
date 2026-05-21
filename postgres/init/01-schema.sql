@@ -1,14 +1,7 @@
 -- =============================================================================
 -- Travel Recommendation System - Database Schema
 -- =============================================================================
--- Target DBMS : PostgreSQL 13+
--- Description : Schema for storing users, destinations, activities, and
---               personalized travel recommendation requests / results.
--- =============================================================================
 
--- -----------------------------------------------------------------------------
--- Table: users
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users
 (
     id            BIGSERIAL PRIMARY KEY,
@@ -17,10 +10,6 @@ CREATE TABLE IF NOT EXISTS users
     password_hash TEXT NOT NULL DEFAULT ''
 );
 
-
--- -----------------------------------------------------------------------------
--- Table: destinations
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS destinations
 (
     id      BIGSERIAL PRIMARY KEY,
@@ -29,20 +18,12 @@ CREATE TABLE IF NOT EXISTS destinations
     area    TEXT
 );
 
-
--- -----------------------------------------------------------------------------
--- Table: activity_types
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS activity_types
 (
     id   BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE
 );
 
-
--- -----------------------------------------------------------------------------
--- Table: destination_activities
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS destination_activities
 (
     id               BIGSERIAL PRIMARY KEY,
@@ -59,10 +40,6 @@ CREATE TABLE IF NOT EXISTS destination_activities
     UNIQUE (destination_id, activity_type_id)
 );
 
-
--- -----------------------------------------------------------------------------
--- Table: recommendation_requests
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS recommendation_requests
 (
     id                    BIGSERIAL PRIMARY KEY,
@@ -80,10 +57,6 @@ CREATE TABLE IF NOT EXISTS recommendation_requests
     created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-
--- -----------------------------------------------------------------------------
--- Table: recommendation_results
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS recommendation_results
 (
     id                        BIGSERIAL PRIMARY KEY,
@@ -102,9 +75,6 @@ CREATE TABLE IF NOT EXISTS recommendation_results
 );
 
 
--- -----------------------------------------------------------------------------
--- Indexes
--- -----------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_dest_activities_destination ON destination_activities (destination_id);
 CREATE INDEX IF NOT EXISTS idx_dest_activities_activity    ON destination_activities (activity_type_id);
 

@@ -1,5 +1,4 @@
-"""Security: bcrypt password hashing and JWT token handling.
-"""
+"""bcrypt password hashing and JWT token handling."""
 
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -10,9 +9,6 @@ from jose import JWTError, jwt
 from .config import get_settings
 
 settings = get_settings()
-
-
-# -- Password --
 
 def hash_password(plain: str) -> str:
     """Return a bcrypt hash of the given plain-text password."""
@@ -25,8 +21,6 @@ def verify_password(plain: str, hashed: str) -> bool:
         return False
     return bcrypt.checkpw(plain.encode(), hashed.encode())
 
-
-# -- JWT --
 
 def create_access_token(subject: str | int, extra_claims: dict[str, Any] | None = None) -> str:
     """Create a signed JWT with `sub`, `iat`, `exp`."""

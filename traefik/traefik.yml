@@ -1,6 +1,4 @@
-# =============================================================================
 # Traefik static configuration
-# =============================================================================
 entryPoints:
   web:
     address: ":80"
@@ -30,7 +28,7 @@ providers:
     filename: /etc/traefik/traefik_dynamic.yml # Point to the file above
     watch: true
 
-# Two ACME resolvers: one for staging, one for production.
+# Two ACME resolvers: one for staging, one for production
 certificatesResolvers:
   letsencrypt-staging:
     acme:
@@ -48,7 +46,7 @@ certificatesResolvers:
       httpChallenge:
         entryPoint: web
 
-# docker-compose logs traefik.
+# docker-compose logs traefik
 log:
   level: INFO
 
