@@ -1,7 +1,3 @@
-// ==============================
-// Travel Recommender frontend //
-// ==============================
-
 const TOKEN_KEY = "tr_token";
 
 // -- Helpers --
@@ -56,14 +52,14 @@ el("tab-register").addEventListener("click", () => {
 async function showAuthenticatedUI() {
     el("auth-panel").classList.add("hidden");
     el("rec-panel").classList.remove("hidden");
+    el("dashboard-panel").classList.remove("hidden");
     el("logout-btn").classList.remove("hidden");
 
     try {
         const me = await api("/api/auth/me", { auth: true });
         el("user-info").textContent = `Hello, ${me.name || me.email}`;
-        await loadActivityTypes();
+        await Promise.all([loadActivityTypes(), loadFavorites()]);
     } catch {
-        // token expired or invalid
         setToken(null);
         showLoggedOutUI();
     }
@@ -72,6 +68,7 @@ async function showAuthenticatedUI() {
 function showLoggedOutUI() {
     el("auth-panel").classList.remove("hidden");
     el("rec-panel").classList.add("hidden");
+    el("dashboard-panel").classList.add("hidden");
     el("logout-btn").classList.add("hidden");
     el("user-info").textContent = "";
 }
@@ -177,7 +174,12 @@ function renderResults(results) {
     el("results").innerHTML = results
         .map(
             (r) => `
-        <div class="result-card">
+        <div class="result-card" data-da-id="${r.destination_activity_id}">
+            <button class="fav-btn${r.is_favorited ? " active" : ""}"
+                    title="${r.is_favorited ? "Remove from favourites" : "Save to favourites"}"
+                    onclick="toggleFavorite(this, ${r.destination_activity_id})">
+                ${r.is_favorited ? "★" : "☆"}
+            </button>
             <span class="score">${r.match_score} pts</span>
             <div class="rank">#${r.rank_position}</div>
             <div class="name">${r.destination_name} — ${r.activity_name}</div>
@@ -187,6 +189,79 @@ function renderResults(results) {
     `,
         )
         .join("");
+}
+
+// -- Favourites --
+
+async function toggleFavorite(btn, destinationActivityId) {
+    const isFav = btn.classList.contains("active");
+    try {
+        if (isFav) {
+            await api(`/api/favorites/${destinationActivityId}`, { method: "DELETE", auth: true });
+            btn.classList.remove("active");
+            btn.textContent = "☆";
+            btn.title = "Save to favourites";
+        } else {
+            await api("/api/favorites", {
+                method: "POST",
+                body: { destination_activity_id: destinationActivityId },
+                auth: true,
+            });
+            btn.classList.add("active");
+            btn.textContent = "★";
+            btn.title = "Remove from favourites";
+        }
+        await loadFavorites();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function loadFavorites() {
+    try {
+        const favs = await api("/api/favorites", { auth: true });
+        renderFavorites(favs);
+    } catch {
+        // silently skip — dashboard is non-critical
+    }
+}
+
+function renderFavorites(favs) {
+    if (!favs.length) {
+        el("favorites-list").innerHTML = "<p class='muted'>No favourites saved yet.</p>";
+        return;
+    }
+    el("favorites-list").innerHTML = favs
+        .map(
+            (f) => `
+        <div class="fav-card">
+            <div class="fav-card-info">
+                <div class="name">${f.destination_name} — ${f.activity_name}</div>
+                <div class="muted">${[f.country, f.area].filter(Boolean).join(" · ")}</div>
+            </div>
+            <button class="unfav-btn" title="Remove from favourites"
+                    onclick="removeFavorite(this, ${f.destination_activity_id})">✕ Remove</button>
+        </div>
+    `,
+        )
+        .join("");
+}
+
+async function removeFavorite(btn, destinationActivityId) {
+    btn.disabled = true;
+    try {
+        await api(`/api/favorites/${destinationActivityId}`, { method: "DELETE", auth: true });
+        const resultStar = document.querySelector(`.result-card[data-da-id="${destinationActivityId}"] .fav-btn`);
+        if (resultStar) {
+            resultStar.classList.remove("active");
+            resultStar.textContent = "☆";
+            resultStar.title = "Save to favourites";
+        }
+        await loadFavorites();
+    } catch (err) {
+        btn.disabled = false;
+        alert(err.message);
+    }
 }
 
 // -- Bootstrap --
