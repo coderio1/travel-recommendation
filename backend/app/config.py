@@ -1,8 +1,6 @@
 """Application configuration.
-
 Pydantic-settings loads environment variables and ensures it's
-readability for whole the app on one place. It guarantees a single,
-validated source of truth.
+readability for whole the app on one place.
 """
 
 from functools import lru_cache

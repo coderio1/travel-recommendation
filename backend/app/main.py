@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
-from .routers import activities, auth, destinations, recommendations
+from .routers import activities, auth, destinations, favorites, recommendations
 
 settings = get_settings()
 
@@ -35,6 +35,7 @@ app.include_router(auth.router)
 app.include_router(destinations.router)
 app.include_router(activities.router)
 app.include_router(recommendations.router)
+app.include_router(favorites.router)
 
 
 @app.get("/api/health", tags=["health"])
@@ -43,7 +44,6 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-# -- Static frontend ---------------------------------------------------------
 # Serve the SPA from /static and expose the index at the root.
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 if STATIC_DIR.exists():

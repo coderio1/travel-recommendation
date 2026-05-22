@@ -43,6 +43,7 @@ class RecommendationResultOut(BaseModel):
     match_score: Decimal | None
     rank_position: int | None
     reason: str | None
+    is_favorited: bool = False
 
 
 class RecommendationRequestOut(BaseModel):

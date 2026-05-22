@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from ..crud import favorite as fav_crud
 from ..crud import recommendation as rec_crud
 from ..deps import get_current_user, get_db
 from ..models.user import User
@@ -14,8 +15,9 @@ from ..services.recommender import ScoringInput, score_candidates
 router = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
 
 
-def _build_response(req) -> RecommendationRequestOut:
+def _build_response(req, favorited_ids: set[int] | None = None) -> RecommendationRequestOut:
     """Flatten ORM relationships into the response shape."""
+    favorited_ids = favorited_ids or set()
     results: list[RecommendationResultOut] = []
     for r in sorted(req.results, key=lambda x: (x.rank_position or 0)):
         da = r.destination_activity
@@ -33,6 +35,7 @@ def _build_response(req) -> RecommendationRequestOut:
                 match_score=r.match_score,
                 rank_position=r.rank_position,
                 reason=r.reason,
+                is_favorited=r.destination_activity_id in favorited_ids,
             )
         )
     return RecommendationRequestOut(
@@ -98,7 +101,8 @@ def create_recommendation(
     # 5) Reload with all relationships so the response is complete
     fresh = rec_crud.get_request(db, request_id=request.id, user_id=current_user.id)
     assert fresh is not None
-    return _build_response(fresh)
+    favorited_ids = fav_crud.get_favorited_ids(db, user_id=current_user.id)
+    return _build_response(fresh, favorited_ids)
 
 
 @router.get("/{request_id}", response_model=RecommendationRequestOut)
@@ -111,7 +115,8 @@ def get_recommendation(
     req = rec_crud.get_request(db, request_id=request_id, user_id=current_user.id)
     if req is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    return _build_response(req)
+    favorited_ids = fav_crud.get_favorited_ids(db, user_id=current_user.id)
+    return _build_response(req, favorited_ids)
 
 
 @router.get("", response_model=list[RecommendationRequestOut])

@@ -12,8 +12,10 @@ class User(Base):
     name: Mapped[str | None] = mapped_column(Text, nullable=True)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False, default="")
 
-    # Lazy='selectin' would eager-load; we keep default lazy='select' (queried on access).
     requests: Mapped[list["RecommendationRequest"]] = relationship(  # type: ignore[name-defined]
         back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    favorites: Mapped[list["UserFavorite"]] = relationship(  # type: ignore[name-defined]
         cascade="all, delete-orphan",
     )
