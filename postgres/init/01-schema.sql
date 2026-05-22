@@ -74,6 +74,18 @@ CREATE TABLE IF NOT EXISTS recommendation_results
     UNIQUE (recommendation_request_id, destination_activity_id)
 );
 
+CREATE TABLE IF NOT EXISTS user_favorites
+(
+    id                      BIGSERIAL PRIMARY KEY,
+    user_id                 BIGINT NOT NULL
+        REFERENCES users (id) ON DELETE CASCADE,
+    destination_activity_id BIGINT NOT NULL
+        REFERENCES destination_activities (id) ON DELETE CASCADE,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    UNIQUE (user_id, destination_activity_id)
+);
+
 
 CREATE INDEX IF NOT EXISTS idx_dest_activities_destination ON destination_activities (destination_id);
 CREATE INDEX IF NOT EXISTS idx_dest_activities_activity    ON destination_activities (activity_type_id);
@@ -84,3 +96,5 @@ CREATE INDEX IF NOT EXISTS idx_rec_requests_destination    ON recommendation_req
 
 CREATE INDEX IF NOT EXISTS idx_rec_results_request         ON recommendation_results (recommendation_request_id);
 CREATE INDEX IF NOT EXISTS idx_rec_results_dest_activity   ON recommendation_results (destination_activity_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_favorites_user         ON user_favorites (user_id);
