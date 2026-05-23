@@ -1,11 +1,7 @@
 # Dynamic TLS configuration
+# No static certificates needed — Let's Encrypt certs are managed automatically
+# by the ACME resolvers defined in traefik.yml. Each router uses:
+#   traefik.http.routers.<name>.tls.certresolver=letsencrypt
 tls:
-  certificates:
-    - certFile: /etc/traefik/cert/cert.pem
-      keyFile: /etc/traefik/cert/key.pem
   stores:
-    default:
-      defaultCertificate:
-        certFile: /etc/traefik/cert/cert.pem
-        keyFile: /etc/traefik/cert/key.pem
-
+    default: {}

@@ -1,7 +1,4 @@
 services:
-  # ---------------------------------------------------------------------------
-  # Reverse proxy / TLS termination
-  # ---------------------------------------------------------------------------
   traefik:
     image: traefik:v3.7
     container_name: travel_traefik
@@ -35,6 +32,7 @@ services:
       - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=dashboard-auth"
       - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}"
@@ -44,15 +42,13 @@ services:
       - "traefik.http.routers.apex-redirect.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.apex-redirect.entrypoints=websecure"
       - "traefik.http.routers.apex-redirect.tls=true"
+      - "traefik.http.routers.apex-redirect.tls.certresolver=letsencrypt"
       - "traefik.http.routers.apex-redirect.middlewares=apex-to-www"
       - "traefik.http.routers.apex-redirect.service=noop@internal"
       - "traefik.http.middlewares.apex-to-www.redirectregex.regex=^https?://${DOMAIN}(.*)"
       - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.${DOMAIN}/$${1}"
       - "traefik.http.middlewares.apex-to-www.redirectregex.permanent=true"
 
-  # ---------------------------------------------------------------------------
-  # Application database
-  # ---------------------------------------------------------------------------
   db:
     image: postgres:16-alpine
     container_name: travel_db
@@ -75,9 +71,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # ---------------------------------------------------------------------------
-  # FastAPI application
-  # ---------------------------------------------------------------------------
   backend:
     build:
       context: ./backend
@@ -108,6 +101,7 @@ services:
       - "traefik.http.routers.backend.rule=Host(`www.${DOMAIN}`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.routers.backend.service=backend"
 
       # --- Security headers middleware ---------------------------------------
