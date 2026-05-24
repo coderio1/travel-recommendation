@@ -118,8 +118,6 @@ services:
       - "traefik.http.middlewares.secure-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
 
       # --- Basic auth for /api/* and /docs ----------------------------------
-      # Generate API_BASIC_AUTH with:
-      #   docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'yourpassword' | sed -e 's/\$/\$\$/g'
       - "traefik.http.middlewares.api-auth.basicauth.users=${API_BASIC_AUTH}"
 
       # /api/* — more specific rule wins over the catch-all backend router
