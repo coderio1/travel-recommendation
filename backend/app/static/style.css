@@ -159,3 +159,16 @@ button#logout-btn {
 .unfav-btn:disabled { opacity: 0.5; cursor: default; }
 
 .muted { color: var(--muted); font-size: 0.9rem; }
+
+#load-more-btn {
+    display: block;
+    width: 100%;
+    margin-top: 0.75rem;
+    background: var(--primary);
+    color: white !important;
+    border: none;
+    font-size: 0.95rem;
+    padding: 0.7rem;
+    opacity: 0.85;
+}
+#load-more-btn:hover { opacity: 1; background: var(--primary-hover); }

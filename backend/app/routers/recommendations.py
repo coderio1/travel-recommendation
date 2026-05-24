@@ -92,7 +92,7 @@ def create_recommendation(
             wanted_country=payload.wanted_country,
             wanted_area=payload.wanted_area,
         ),
-        top_k=10,
+        top_k=30,
     )
 
     # 4) Persist results (commits the transaction)

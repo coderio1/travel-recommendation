@@ -166,14 +166,12 @@ el("rec-form").addEventListener("submit", async (e) => {
     }
 });
 
-function renderResults(results) {
-    if (!results.length) {
-        el("results").innerHTML = "<p>No matches found. Try loosening your filters.</p>";
-        return;
-    }
-    el("results").innerHTML = results
-        .map(
-            (r) => `
+const PAGE_SIZE = 10;
+let _allResults = [];
+let _shownCount = 0;
+
+function resultCardHtml(r) {
+    return `
         <div class="result-card" data-da-id="${r.destination_activity_id}">
             <button class="fav-btn${r.is_favorited ? " active" : ""}"
                     title="${r.is_favorited ? "Remove from favourites" : "Save to favourites"}"
@@ -186,9 +184,35 @@ function renderResults(results) {
             <div class="rank">${[r.country, r.area].filter(Boolean).join(" · ")}</div>
             <div class="reason">${r.reason || ""}</div>
         </div>
-    `,
-        )
-        .join("");
+    `;
+}
+
+function renderResults(results) {
+    _allResults = results;
+    _shownCount = 0;
+    el("results").innerHTML = "";
+    if (!results.length) {
+        el("results").innerHTML = "<p>No matches found. Try loosening your filters.</p>";
+        return;
+    }
+    showMoreResults();
+}
+
+function showMoreResults() {
+    const existing = el("load-more-btn");
+    if (existing) existing.remove();
+
+    const batch = _allResults.slice(_shownCount, _shownCount + PAGE_SIZE);
+    el("results").insertAdjacentHTML("beforeend", batch.map(resultCardHtml).join(""));
+    _shownCount += batch.length;
+
+    if (_shownCount < _allResults.length) {
+        const remaining = _allResults.length - _shownCount;
+        el("results").insertAdjacentHTML(
+            "beforeend",
+            `<button id="load-more-btn" onclick="showMoreResults()">Load more (${remaining} remaining)</button>`,
+        );
+    }
 }
 
 // -- Favourites --
