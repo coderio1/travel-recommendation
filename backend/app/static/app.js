@@ -71,6 +71,12 @@ function showLoggedOutUI() {
     el("dashboard-panel").classList.add("hidden");
     el("logout-btn").classList.add("hidden");
     el("user-info").textContent = "";
+    el("login-form").reset();
+    el("register-form").reset();
+    el("rec-form").reset();
+    el("results").innerHTML = "";
+    _allResults = [];
+    _shownCount = 0;
 }
 
 el("login-form").addEventListener("submit", async (e) => {

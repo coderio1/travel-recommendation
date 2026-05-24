@@ -23,16 +23,16 @@
                 <button id="tab-register" class="tab">Register</button>
             </div>
 
-            <form id="login-form">
-                <label>Email <input type="email" name="email" required /></label>
-                <label>Password <input type="password" name="password" required minlength="8" /></label>
+            <form id="login-form" autocomplete="off">
+                <label>Email <input type="email" name="email" autocomplete="off" required /></label>
+                <label>Password <input type="password" name="password" autocomplete="current-password" required minlength="8" /></label>
                 <button type="submit">Login</button>
             </form>
 
-            <form id="register-form" class="hidden">
-                <label>Email <input type="email" name="email" required /></label>
-                <label>Name <input type="text" name="name" /></label>
-                <label>Password <input type="password" name="password" required minlength="8" /></label>
+            <form id="register-form" class="hidden" autocomplete="off">
+                <label>Email <input type="email" name="email" autocomplete="off" required /></label>
+                <label>Name <input type="text" name="name" autocomplete="off" /></label>
+                <label>Password <input type="password" name="password" autocomplete="new-password" required minlength="8" /></label>
                 <button type="submit">Create account</button>
             </form>
 
