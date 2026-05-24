@@ -7,6 +7,9 @@ services:
       # YAML file mounted below for static config;
       - "--configFile=/etc/traefik/traefik.yml"
 #      - "--log.level=DEBUG"     # uncomment this line for traefik debug logs
+#    environment:
+#      # Passed into the container so traefik.yml can expand ${ACME_EMAIL}.
+#      ACME_EMAIL: ${ACME_EMAIL}
     ports:
       - "80:80"
       - "443:443"
@@ -20,6 +23,7 @@ services:
       - ./traefik/traefik_dynamic.yml:/etc/traefik/traefik_dynamic.yml:ro
       # Persist Let's Encrypt certs across restarts. Permissions on the host file
       # MUST be 0600 or Traefik refuses to start.
+      - ./traefik/acme-staging.json:/letsencrypt/acme-staging.json
       - ./traefik/acme.json:/letsencrypt/acme.json
       - ./traefik/cert:/etc/traefik/cert
     networks:
@@ -32,7 +36,7 @@ services:
       - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls=true"
-      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.tls.certresolver=${CERT_RESOLVER}"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=dashboard-auth"
       - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}"
@@ -42,7 +46,7 @@ services:
       - "traefik.http.routers.apex-redirect.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.apex-redirect.entrypoints=websecure"
       - "traefik.http.routers.apex-redirect.tls=true"
-      - "traefik.http.routers.apex-redirect.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.apex-redirect.tls.certresolver=${CERT_RESOLVER}"
       - "traefik.http.routers.apex-redirect.middlewares=apex-to-www"
       - "traefik.http.routers.apex-redirect.service=noop@internal"
       - "traefik.http.middlewares.apex-to-www.redirectregex.regex=^https?://${DOMAIN}(.*)"
@@ -101,7 +105,7 @@ services:
       - "traefik.http.routers.backend.rule=Host(`www.${DOMAIN}`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.backend.tls.certresolver=${CERT_RESOLVER}"
       - "traefik.http.routers.backend.service=backend"
 
       # --- Security headers middleware ---------------------------------------
