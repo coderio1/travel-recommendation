@@ -50,7 +50,7 @@ services:
       - "traefik.http.routers.apex-redirect.middlewares=apex-to-www"
       - "traefik.http.routers.apex-redirect.service=noop@internal"
       - "traefik.http.middlewares.apex-to-www.redirectregex.regex=^https?://${DOMAIN}(.*)"
-      - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.${DOMAIN}/$${1}"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.${DOMAIN}$${1}"
       - "traefik.http.middlewares.apex-to-www.redirectregex.permanent=true"
 
   db:
