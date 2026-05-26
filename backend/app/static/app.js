@@ -126,7 +126,7 @@ el("logout-btn").addEventListener("click", () => {
 // -- Recommendation form --
 
 async function loadActivityTypes() {
-    const types = await api("/api/activities");
+    const types = await api("/api/activities", { auth: true });
     const select = document.querySelector('select[name="activity_type_id"]');
     // Reset (keep the "Any" option)
     select.innerHTML = '<option value="">Any</option>';
