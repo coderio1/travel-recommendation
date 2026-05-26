@@ -50,7 +50,7 @@ services:
       - "traefik.http.routers.apex-redirect.middlewares=apex-to-www"
       - "traefik.http.routers.apex-redirect.service=noop@internal"
       - "traefik.http.middlewares.apex-to-www.redirectregex.regex=^https?://${DOMAIN}(.*)"
-      - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.${DOMAIN}/$${1}"
+      - "traefik.http.middlewares.apex-to-www.redirectregex.replacement=https://www.${DOMAIN}$${1}"
       - "traefik.http.middlewares.apex-to-www.redirectregex.permanent=true"
 
   db:
@@ -118,15 +118,9 @@ services:
       - "traefik.http.middlewares.secure-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
 
       # --- Basic auth for /api/* and /docs ----------------------------------
+      # Generate API_BASIC_AUTH with:
+      #   docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'yourpassword' | sed -e 's/\$/\$\$/g'
       - "traefik.http.middlewares.api-auth.basicauth.users=${API_BASIC_AUTH}"
-
-      # /api/* — more specific rule wins over the catch-all backend router
-      - "traefik.http.routers.backend-api.rule=Host(`www.${DOMAIN}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-api.entrypoints=websecure"
-      - "traefik.http.routers.backend-api.tls=true"
-      - "traefik.http.routers.backend-api.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.routers.backend-api.service=backend"
-      - "traefik.http.routers.backend-api.middlewares=api-auth,secure-headers"
 
       # /docs + /redoc + /openapi.json
       - "traefik.http.routers.backend-docs.rule=Host(`www.${DOMAIN}`) && (Path(`/docs`) || Path(`/redoc`) || Path(`/openapi.json`))"
