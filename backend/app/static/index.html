@@ -25,14 +25,14 @@
 
             <form id="login-form" autocomplete="off">
                 <label>Email <input type="email" name="email" autocomplete="off" required /></label>
-                <label>Password <input type="password" name="password" autocomplete="current-password" required minlength="8" /></label>
+                <label>Password <input type="password" name="password" autocomplete="off" required minlength="8" /></label>
                 <button type="submit">Login</button>
             </form>
 
             <form id="register-form" class="hidden" autocomplete="off">
                 <label>Email <input type="email" name="email" autocomplete="off" required /></label>
                 <label>Name <input type="text" name="name" autocomplete="off" /></label>
-                <label>Password <input type="password" name="password" autocomplete="new-password" required minlength="8" /></label>
+                <label>Password <input type="password" name="password" autocomplete="off" required minlength="8" /></label>
                 <button type="submit">Create account</button>
             </form>
 
@@ -42,13 +42,13 @@
         <!-- Recommendation panel -->
         <section id="rec-panel" class="card hidden">
             <h2>Find your next trip</h2>
-            <form id="rec-form">
+            <form id="rec-form" autocomplete="off">
                 <div class="row">
                     <label>Country
-                        <input type="text" name="wanted_country" placeholder="e.g. Italy" />
+                        <input type="text" name="wanted_country" autocomplete="off" placeholder="e.g. Italy" />
                     </label>
                     <label>Area
-                        <input type="text" name="wanted_area" placeholder="e.g. Lazio" />
+                        <input type="text" name="wanted_area" autocomplete="off" placeholder="e.g. Lazio" />
                     </label>
                 </div>
 
