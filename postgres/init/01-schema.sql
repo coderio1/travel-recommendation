@@ -76,12 +76,16 @@ CREATE TABLE IF NOT EXISTS recommendation_results
 
 CREATE TABLE IF NOT EXISTS user_favorites
 (
-    id                      BIGSERIAL PRIMARY KEY,
-    user_id                 BIGINT NOT NULL
+    id                        BIGSERIAL PRIMARY KEY,
+    user_id                   BIGINT NOT NULL
         REFERENCES users (id) ON DELETE CASCADE,
-    destination_activity_id BIGINT NOT NULL
+    destination_activity_id   BIGINT NOT NULL
         REFERENCES destination_activities (id) ON DELETE CASCADE,
-    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    recommendation_request_id BIGINT
+        REFERENCES recommendation_requests (id) ON DELETE SET NULL,
+    travel_start_month        INT CHECK (travel_start_month BETWEEN 1 AND 12),
+    travel_end_month          INT CHECK (travel_end_month   BETWEEN 1 AND 12),
+    created_at                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     UNIQUE (user_id, destination_activity_id)
 );

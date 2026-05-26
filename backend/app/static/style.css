@@ -158,6 +158,53 @@ button#logout-btn {
 .unfav-btn:hover { color: var(--error); border-color: var(--error); background: none; }
 .unfav-btn:disabled { opacity: 0.5; cursor: default; }
 
+.fav-dates { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.2rem; flex-wrap: wrap; }
+
+.edit-dates-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 0.1rem 0.3rem;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.15s, color 0.15s;
+}
+.edit-dates-btn:hover { opacity: 1; color: var(--primary); background: none; }
+
+.dates-edit-row { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+.month-input {
+    width: 6rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.save-dates-btn {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+.save-dates-btn:hover { background: var(--primary-hover); }
+
+.cancel-dates-btn {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    background: none;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+.cancel-dates-btn:hover { color: var(--text); border-color: var(--text); background: none; }
+
 .muted { color: var(--muted); font-size: 0.9rem; }
 
 #load-more-btn {

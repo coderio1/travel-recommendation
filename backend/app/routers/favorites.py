@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..crud import favorite as fav_crud
 from ..deps import get_current_user, get_db
 from ..models.user import User
-from ..schemas.favorite import FavoriteIn, FavoriteOut
+from ..schemas.favorite import FavoriteIn, FavoriteOut, FavoritePatch
 
 router = APIRouter(prefix="/api/favorites", tags=["favorites"])
 
@@ -19,6 +19,8 @@ def _to_out(fav) -> FavoriteOut:
         country=da.destination.country,
         area=da.destination.area,
         activity_name=da.activity_type.name,
+        travel_start_month=fav.travel_start_month,
+        travel_end_month=fav.travel_end_month,
         created_at=fav.created_at,
     )
 
@@ -41,7 +43,28 @@ def add_favorite(
         db,
         user_id=current_user.id,
         destination_activity_id=payload.destination_activity_id,
+        recommendation_request_id=payload.recommendation_request_id,
     )
+    return _to_out(fav)
+
+
+@router.patch("/{destination_activity_id}", response_model=FavoriteOut)
+def update_favorite_dates(
+    destination_activity_id: int,
+    payload: FavoritePatch,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> FavoriteOut:
+    try:
+        fav = fav_crud.update_favorite_dates(
+            db,
+            user_id=current_user.id,
+            destination_activity_id=destination_activity_id,
+            travel_start_month=payload.travel_start_month,
+            travel_end_month=payload.travel_end_month,
+        )
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Favorite not found")
     return _to_out(fav)
 
 

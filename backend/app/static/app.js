@@ -166,6 +166,7 @@ el("rec-form").addEventListener("submit", async (e) => {
             body: payload,
             auth: true,
         });
+        _currentRequestId = data.id;
         renderResults(data.results);
     } catch (err) {
         el("results").innerHTML = `<p class="error">${err.message}</p>`;
@@ -175,6 +176,10 @@ el("rec-form").addEventListener("submit", async (e) => {
 const PAGE_SIZE = 10;
 let _allResults = [];
 let _shownCount = 0;
+let _currentRequestId = null;
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function monthName(m) { return m ? MONTHS[m - 1] : null; }
 
 function resultCardHtml(r) {
     return `
@@ -234,7 +239,10 @@ async function toggleFavorite(btn, destinationActivityId) {
         } else {
             await api("/api/favorites", {
                 method: "POST",
-                body: { destination_activity_id: destinationActivityId },
+                body: {
+                    destination_activity_id: destinationActivityId,
+                    recommendation_request_id: _currentRequestId,
+                },
                 auth: true,
             });
             btn.classList.add("active");
@@ -256,25 +264,70 @@ async function loadFavorites() {
     }
 }
 
+function favCardHtml(f) {
+    const daId = f.destination_activity_id;
+    const location = [f.country, f.area].filter(Boolean).join(" · ");
+    const start = monthName(f.travel_start_month);
+    const end = monthName(f.travel_end_month);
+    const dateLabel = (start || end)
+        ? `Travel: ${[start, end].filter(Boolean).join(" – ")}`
+        : "No travel dates";
+    return `
+    <div class="fav-card" id="fav-card-${daId}">
+        <div class="fav-card-info">
+            <div class="name">${f.destination_name} — ${f.activity_name}</div>
+            ${location ? `<div class="muted">${location}</div>` : ""}
+            <div class="fav-dates" id="fav-dates-${daId}">
+                <span class="muted">${dateLabel}</span>
+                <button class="edit-dates-btn"
+                        onclick="startEditDates(${daId}, ${f.travel_start_month ?? "null"}, ${f.travel_end_month ?? "null"})"
+                        title="Edit travel dates">&#9998;</button>
+            </div>
+        </div>
+        <button class="unfav-btn" title="Remove from favourites"
+                onclick="removeFavorite(this, ${daId})">&#10005; Remove</button>
+    </div>`;
+}
+
 function renderFavorites(favs) {
     if (!favs.length) {
         el("favorites-list").innerHTML = "<p class='muted'>No favourites saved yet.</p>";
         return;
     }
-    el("favorites-list").innerHTML = favs
-        .map(
-            (f) => `
-        <div class="fav-card">
-            <div class="fav-card-info">
-                <div class="name">${f.destination_name} — ${f.activity_name}</div>
-                <div class="muted">${[f.country, f.area].filter(Boolean).join(" · ")}</div>
-            </div>
-            <button class="unfav-btn" title="Remove from favourites"
-                    onclick="removeFavorite(this, ${f.destination_activity_id})">✕ Remove</button>
-        </div>
-    `,
-        )
-        .join("");
+    el("favorites-list").innerHTML = favs.map(favCardHtml).join("");
+}
+
+function startEditDates(daId, currentStart, currentEnd) {
+    document.getElementById(`fav-dates-${daId}`).innerHTML = `
+        <div class="dates-edit-row">
+            <input type="number" id="edit-start-${daId}" class="month-input"
+                   min="1" max="12" placeholder="From (1-12)"
+                   value="${currentStart ?? ""}" />
+            <span class="muted">&#8211;</span>
+            <input type="number" id="edit-end-${daId}" class="month-input"
+                   min="1" max="12" placeholder="To (1-12)"
+                   value="${currentEnd ?? ""}" />
+            <button class="save-dates-btn" onclick="saveDates(${daId})">Save</button>
+            <button class="cancel-dates-btn" onclick="loadFavorites()">Cancel</button>
+        </div>`;
+}
+
+async function saveDates(daId) {
+    const startVal = document.getElementById(`edit-start-${daId}`).value;
+    const endVal = document.getElementById(`edit-end-${daId}`).value;
+    try {
+        await api(`/api/favorites/${daId}`, {
+            method: "PATCH",
+            body: {
+                travel_start_month: startVal ? Number(startVal) : null,
+                travel_end_month: endVal ? Number(endVal) : null,
+            },
+            auth: true,
+        });
+        await loadFavorites();
+    } catch (err) {
+        alert(err.message);
+    }
 }
 
 async function removeFavorite(btn, destinationActivityId) {
