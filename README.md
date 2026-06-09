@@ -27,7 +27,7 @@ Only Traefik exposes ports to the host. The backend and database are reachable o
 ```
 .
 ├── docker-compose.yml              # Orchestrates traefik + db + backend
-├── env-example                     # Copy to .env and fill in values
+├── env-example                     # Copy this to .env and fill in your values
 ├── run_before_docker_containers.sh # Creates required external Docker volumes
 ├── traefik/
 │   ├── traefik.yml                 # Static Traefik config (entrypoints, ACME)
@@ -133,7 +133,7 @@ docker compose up -d --build
 docker compose logs -f
 ```
 
-The app will be available at `https://www.your-domain.com`.
+The app will be available at `https://www.your-domain.com`
 
 ## DNS Requirements
 
